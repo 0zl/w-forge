@@ -89,7 +89,7 @@ async def start_mqtt():
 
     async with mqtt as client:
         await client.subscribe(cmd_opts.w_topic)
-        await client.publish(cmd_opts.w_master, start_init())
+        await client.publish(cmd_opts.w_broker, start_init())
 
         async for msg in client.messages:
             await handle_payload(client, msg.payload)
