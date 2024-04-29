@@ -1,10 +1,10 @@
-import aiohttp, aiomqtt, logging, json, threading, time
+import asyncio, aiohttp, aiomqtt, json, threading, time
 from modules import shared
 from modules.shared_cmd_options import cmd_opts
 
 
 w_ts_start = int(time.time() * 1000)
-w_logger = logging.getLogger('w-mqtt')
+
 
 def serialize_data(data, callback_id):
     obj = {
@@ -24,35 +24,16 @@ def assert_shit():
 
 
 async def ping():
-    url = f'http://127.0.0.1:{cmd_opts.port}'
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url) as resp:
-                status_code = resp.status
-                if status_code == 200:
-                    status = 'online'
-                else:
-                    if shared.model_loaded:
-                        status = 'offline'
-                    else:
-                        status = 'booting'
-        except aiohttp.ClientConnectorError:
-            if shared.model_loaded:
-                status = 'offline'
-            else:
-                status = 'booting'
-    
     return {
         'id': cmd_opts.w_id,
         'ts': w_ts_start,
-        'status': status,
-        'busy_queue': shared.state.job_count
-    }
+        'status': 'online' if shared.model_loaded else 'booting',
+        'busy_queue': getattr(shared.state, 'job_count', 0)
+    }, cmd_opts.w_topic
 
 
 async def t2i_infer(params):
-    pass
+    None, None
 
 
 async def handle_payload(client, payload):
@@ -65,16 +46,16 @@ async def handle_payload(client, payload):
         return
 
     if task == 'ping':
-        res = await ping()
+        res, topic = await ping()
     elif task == 't2i':
-        res = await t2i_infer(params)
+        res, topic = await t2i_infer(params) or (None, None)
     else:
-        w_logger.error('w: unknown task %s', task)
+        print('w: unknown task %s', task)
         return
 
     res = serialize_data(res, request_id)
-    await client.publish(cmd_opts.w_master, res)
-    w_logger.info('w: w -> m!')
+    await client.publish(topic or cmd_opts.w_master, res)
+    print('w: w -> m!')
 
 
 def start_init():
@@ -86,15 +67,13 @@ def start_init():
 
 async def start_mqtt():
     assert_shit()
-    w_logger.info('w: nyaa!!')
+    print('w: nyaa!!')
 
     mqtt = aiomqtt.Client(
         hostname=cmd_opts.w_host,
         port=cmd_opts.w_port,
         username=cmd_opts.w_auser,
-        password=cmd_opts.w_apass,
-        protocol='tcp',
-        logger=w_logger
+        password=cmd_opts.w_apass
     )
 
     async with mqtt as client:
@@ -105,5 +84,10 @@ async def start_mqtt():
             await handle_payload(client, msg.payload)
 
 
+def start_async():
+    asyncio.run(start_mqtt())
+
+
 def start_thread():
-    threading.Thread(target=start_mqtt, daemon=True).start()
+    print('w - nyauuuuuuuuuuuuuuuuuuuuuu!')
+    threading.Thread(target=start_async, daemon=True).start()
