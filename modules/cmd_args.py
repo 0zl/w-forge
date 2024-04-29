@@ -152,3 +152,4 @@ parser.add_argument("--w-apass", type=str, help="MQTT broker password", default=
 parser.add_argument("--w-id", type=str, help="MQTT client id", default=None)
 parser.add_argument("--w-topic", type=str, help="MQTT topic", default=None)
 parser.add_argument("--w-master", type=str, help="MQTT master topic", default=None)
+parser.add_argument("--w-broker", type=str, help="MQTT broker topic", default=None)
