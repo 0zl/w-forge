@@ -143,3 +143,12 @@ parser.add_argument(
     help="Path to directory with annotator model directories",
     default=None,
 )
+
+# added by 0zl
+parser.add_argument("--w-host", type=str, help="MQTT broker host", default=None)
+parser.add_argument("--w-port", type=int, help="MQTT broker port", default=None)
+parser.add_argument("--w-auser", type=str, help="MQTT broker username", default=None)
+parser.add_argument("--w-apass", type=str, help="MQTT broker password", default=None)
+parser.add_argument("--w-id", type=str, help="MQTT client id", default=None)
+parser.add_argument("--w-topic", type=str, help="MQTT topic", default=None)
+parser.add_argument("--w-master", type=str, help="MQTT master topic", default=None)

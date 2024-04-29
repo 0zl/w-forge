@@ -616,6 +616,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer.record("calculate empty prompt")
 
     print(f"Model loaded in {timer.summary()}.")
+    shared.model_loaded = True
 
     return sd_model
 

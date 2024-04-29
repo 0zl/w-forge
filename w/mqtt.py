@@ -1,11 +1,10 @@
-import aiomqtt, logging, json, threading, time
+import aiohttp, aiomqtt, logging, json, threading, time
 from modules import shared
 from modules.shared_cmd_options import cmd_opts
 
 
 w_ts_start = int(time.time() * 1000)
 w_logger = logging.getLogger('w-mqtt')
-
 
 def serialize_data(data, callback_id):
     obj = {
@@ -25,7 +24,31 @@ def assert_shit():
 
 
 async def ping():
-    pass
+    url = f'http://127.0.0.1:{cmd_opts.port}'
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url) as resp:
+                status_code = resp.status
+                if status_code == 200:
+                    status = 'online'
+                else:
+                    if shared.model_loaded:
+                        status = 'offline'
+                    else:
+                        status = 'booting'
+        except aiohttp.ClientConnectorError:
+            if shared.model_loaded:
+                status = 'offline'
+            else:
+                status = 'booting'
+    
+    return {
+        'id': cmd_opts.w_id,
+        'ts': w_ts_start,
+        'status': status,
+        'busy_queue': shared.state.job_count
+    }
 
 
 async def t2i_infer(params):
