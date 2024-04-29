@@ -32,14 +32,23 @@ async def ping():
     }, cmd_opts.w_topic
 
 
-async def t2i_infer(params):
-    None, None
-
+async def t2i_infer(path, method, params):
+    url = f'http://127.0.0.1:{cmd_opts.port}/sdapi/v1/{path}'
+    kwargs = {'params' if method == 'GET' else 'json': params}
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.request(method, url, **kwargs) as response:
+            if response.status == 200:
+                return await response.json(), None
+            else:
+                return await response.text(), None
+            
 
 async def handle_payload(client, payload):
     obj_payload = json.loads(payload)
     task = obj_payload.get('data', {}).get('task')
     params = obj_payload.get('data', {}).get('params')
+    identifier = obj_payload.get('data', {}).get('id')
     request_id = obj_payload.get('request_id')
 
     if task is None:
@@ -47,10 +56,12 @@ async def handle_payload(client, payload):
 
     if task == 'ping':
         res, topic = await ping()
-    elif task == 't2i':
-        res, topic = await t2i_infer(params) or (None, None)
+    elif task == 'request' and identifier == cmd_opts.w_id:
+        path = obj_payload.get('data', {}).get('path')
+        method = obj_payload.get('data', {}).get('method')
+        res, topic = await t2i_infer(path, method, params) or (None, None)
     else:
-        print('w: unknown task %s', task)
+        print(f'w: unknown task {task}')
         return
 
     res = serialize_data(res, request_id)
