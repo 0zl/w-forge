@@ -544,6 +544,9 @@ def start():
     else:
         webui.webui()
 
+    from w import mqtt
+    mqtt.start_thread()
+
     from modules_forge import main_thread
 
     main_thread.loop()

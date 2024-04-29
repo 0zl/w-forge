@@ -57,34 +57,24 @@ async def t2i_infer(params):
 
 async def handle_payload(client, payload):
     obj_payload = json.loads(payload)
+    task = obj_payload.get('data', {}).get('task')
+    params = obj_payload.get('data', {}).get('params')
+    request_id = obj_payload.get('request_id')
 
-    if 'data' not in obj_payload:
+    if task is None:
         return
-    
-    data = obj_payload['data']
-    request_id = obj_payload['request_id']
 
-    if 'task' not in data:
+    if task == 'ping':
+        res = await ping()
+    elif task == 't2i':
+        res = await t2i_infer(params)
+    else:
+        w_logger.error('w: unknown task %s', task)
         return
-    
-    task = data['task']
-    params = data['params']
 
-    try:
-        if task == 'ping':
-            res = await ping()
-        elif task == 't2i':
-            res = await t2i_infer(params)
-        else:
-            w_logger.error('w: unknown task %s', task)
-            w_logger.error(obj_payload)
-    except Exception as e:
-        w_logger.error(e)
-    
-    if res is not None:
-        res = serialize_data(res, request_id)
-        await client.publish(cmd_opts.w_master, res)
-        w_logger.info('w: w -> m!')
+    res = serialize_data(res, request_id)
+    await client.publish(cmd_opts.w_master, res)
+    w_logger.info('w: w -> m!')
 
 
 def start_init():
@@ -116,4 +106,4 @@ async def start_mqtt():
 
 
 def start_thread():
-    threading.Thread(target=start_mqtt).start()
+    threading.Thread(target=start_mqtt, daemon=True).start()
