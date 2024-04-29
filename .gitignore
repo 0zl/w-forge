@@ -8,6 +8,7 @@ __pycache__
 /venv
 /tmp
 /output
+/usr
 /model.ckpt
 /models/**/*
 /GFPGANv1.3.pth
