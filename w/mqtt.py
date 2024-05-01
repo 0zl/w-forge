@@ -19,7 +19,7 @@ def assert_shit():
     assert all(
         (cmd_opts.w_host, cmd_opts.w_port, cmd_opts.w_auser,
          cmd_opts.w_apass, cmd_opts.w_id, cmd_opts.w_topic,
-         cmd_opts.w_master)
+         cmd_opts.w_master, cmd_opts.w_broker)
     ), "nyau?"
 
 
@@ -29,7 +29,7 @@ async def ping():
         'ts': w_ts_start,
         'status': 'online' if shared.model_loaded else 'booting',
         'busy_queue': getattr(shared.state, 'job_count', 0)
-    }, cmd_opts.w_topic
+    }, cmd_opts.w_broker
 
 
 async def t2i_infer(path, method, params):
