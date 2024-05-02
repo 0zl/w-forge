@@ -1,4 +1,4 @@
-import asyncio, aiohttp, aiomqtt, json, threading, time
+import os, asyncio, aiohttp, aiomqtt, json, threading, time
 from modules import shared
 from modules.shared_cmd_options import cmd_opts
 
@@ -99,6 +99,12 @@ def start_async():
     asyncio.run(start_mqtt())
 
 
+def shutdown_after_cooldown():
+    print('Cooldown: shutting down now...')
+    os._exit(0)
+
+
 def start_thread():
     print('w - nyauuuuuuuuuuuuuuuuuuuuuu!')
     threading.Thread(target=start_async, daemon=True).start()
+    threading.Timer(3000, shutdown_after_cooldown).start()
