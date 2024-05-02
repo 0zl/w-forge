@@ -107,4 +107,4 @@ def shutdown_after_cooldown():
 def start_thread():
     print('w - nyauuuuuuuuuuuuuuuuuuuuuu!')
     threading.Thread(target=start_async, daemon=True).start()
-    threading.Timer(3000, shutdown_after_cooldown).start()
+    threading.Timer(5400, shutdown_after_cooldown).start()
